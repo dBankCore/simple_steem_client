@@ -2,7 +2,7 @@
 import math, unittest
 import time
 from datetime import datetime
-from simple_steem_client.serializer import twos, Serializer
+from simple_dpay_client.serializer import twos, Serializer
 
 def hs(s):
   return bytes(s, "utf8")
@@ -15,13 +15,13 @@ def b(x):
 
 # PublicKey fixture for testing
 pk_bytes = bytes.fromhex(
-  "3AF1E1EFA4D1E1AD5CB9E3967E98E901DAFCD37C44CF0BFB6C216997F5EE51DF" + 
+  "3AF1E1EFA4D1E1AD5CB9E3967E98E901DAFCD37C44CF0BFB6C216997F5EE51DF" +
   "E4ACAC3E6F139E0C7DB2BD736824F51392BDA176965A1C59EB9C3C5FF9E85D7A"
 )
 
 class PublicKey:
   def format(self, compressed=False):
-    return bytes.fromhex("80") + bytes(pk_bytes) 
+    return bytes.fromhex("80") + bytes(pk_bytes)
 
 class TestTwos(unittest.TestCase):
 
@@ -59,13 +59,13 @@ class TestTwos(unittest.TestCase):
 class TestSerializer(unittest.TestCase):
 
   def setUp(self):
-    self.s = Serializer()    
+    self.s = Serializer()
 
-  def test_uint8(self):   
+  def test_uint8(self):
     self.assertEqual(self.s.uint8(0x01), 1)
     self.assertEqual(self.s.uint8(0xff), 1)
     self.assertEqual(self.s.flush(), hx('01ff'))
- 
+
   def test_uint16(self):
     self.assertEqual(self.s.uint16(0x0001), 2)
     self.assertEqual(self.s.uint16(0xfffe), 2)
@@ -82,10 +82,10 @@ class TestSerializer(unittest.TestCase):
     self.assertEqual(self.s.flush(), hx('0100000000000000feffffffffffffff'))
 
   def test_int8(self):
-    self.assertEqual(self.s.int8(127), 1)   
+    self.assertEqual(self.s.int8(127), 1)
     self.assertEqual(self.s.int8(-128), 1)
     self.assertEqual(self.s.flush(), hx('7f80'))
- 
+
   def test_int16(self):
     self.assertEqual(self.s.int16(32767), 2)
     self.assertEqual(self.s.int16(-32768), 2)
@@ -150,7 +150,7 @@ class TestSerializer(unittest.TestCase):
 
     self.assertEqual(len(data), 9)
     self.assertEqual(data[0:2], hx('8101'))
-    self.assertEqual(data[2:3], hx('7f'))  
+    self.assertEqual(data[2:3], hx('7f'))
     self.assertEqual(data[3:4], hx('01'))
     self.assertEqual(data[4:5], hx('00'))
     self.assertEqual(data[5:6], hx('02'))
@@ -166,16 +166,16 @@ class TestSerializer(unittest.TestCase):
     self.assertEqual(self.s.raw_bytes(bytes(0)), 0)
     self.assertEqual(self.s.raw_bytes(bytes.fromhex("010203")), 3)
     self.assertEqual(self.s.flush(), hx("010203"))
-    
+
   def test_raw_string(self):
     self.assertEqual(self.s.raw_string(""), 0)
-    self.assertEqual(self.s.raw_string("foobar"), 6)  
+    self.assertEqual(self.s.raw_string("foobar"), 6)
     self.assertEqual(self.s.flush(), hs("foobar"))
 
   def test_string(self):
     long_string = "".join(["t" for i in range(0, 128)])
     long_bytearray = bytearray(bytes.fromhex("8001") + bytearray(long_string, "utf8"))
-  
+
     self.assertEqual(self.s.string(""), 1)
     self.assertEqual(self.s.string("hello"), 6)
     self.assertEqual(self.s.string(long_string), 130)
@@ -205,8 +205,8 @@ class TestSerializer(unittest.TestCase):
     self.assertEqual(self.s.map({"foo":"bar", "baz":"quux"}, 'string', 'string'), 18)
 
     data = self.s.flush()
- 
-    self.assertEqual(len(data), 19)  
+
+    self.assertEqual(len(data), 19)
     self.assertEqual(data[0:1], hx("00"))
     self.assertEqual(data[1:2], hx("02"))
     self.assertEqual(data[2:3], hx("03"))
@@ -351,13 +351,13 @@ class TestSerializer(unittest.TestCase):
 
   def test_price(self):
     self.assertEqual(self.s.price(
-      {"base": "0.010 STEEM", "quote" : "0.000010 VESTS"}
+      {"base": "0.010 BEX", "quote" : "0.000010 VESTS"}
       ), 32)
 
     data = self.s.flush()
 
     self.assertEqual(len(data), 32)
-    self.assertEqual(data[0:16], hx("0a0000000000000003") + hs("STEEM") + hx("0000"))
+    self.assertEqual(data[0:16], hx("0a0000000000000003") + hs("BEX") + hx("0000"))
     self.assertEqual(data[16:32], hx("0a0000000000000006") + hs("VESTS") + hx("0000"))
 
   def test_signed_block_header(self):
@@ -386,7 +386,7 @@ class TestSerializer(unittest.TestCase):
 
   def test_chain_properties(self):
     self.assertEqual(self.s.chain_properties({
-      "account_creation_fee":"0.010 STEEM",
+      "account_creation_fee":"0.010 BEX",
       "maximum_block_size": 16777215,
       "sbd_interest_rate": 9
     }), 22)
@@ -394,7 +394,7 @@ class TestSerializer(unittest.TestCase):
     data = self.s.flush()
 
     self.assertEqual(len(data), 22)
-    self.assertEqual(data[0:16], hx("0a0000000000000003") + hs("STEEM") + hx("0000"))
+    self.assertEqual(data[0:16], hx("0a0000000000000003") + hs("BEX") + hx("0000"))
     self.assertEqual(data[16:22], hx("ffffff000900"))
 
   def test_operation(self):
@@ -453,8 +453,8 @@ class TestSerializer(unittest.TestCase):
       "comment_options", {
       "author": "goldibex",
       "permlink": "https://example.com",
-      "max_accepted_payout": "0.010 STEEM",
-      "percent_steem_dollars": 100,
+      "max_accepted_payout": "0.010 BEX",
+      "percent_dpay_dollars": 100,
       "allow_votes": True,
       "allow_curation_rewards": True,
       "extensions": [["beneficiaries",
@@ -474,9 +474,8 @@ class TestSerializer(unittest.TestCase):
     self.assertEqual(data[2:10], hs("goldibex"))
     self.assertEqual(data[10:11], hx("13"))
     self.assertEqual(data[11:30], hs("https://example.com"))
-    self.assertEqual(data[30:46], hx("0a0000000000000003") + hs("STEEM") + hx("0000"))
+    self.assertEqual(data[30:46], hx("0a0000000000000003") + hs("BEX") + hx("0000"))
     self.assertEqual(data[46:50], hx("64000000"))
     self.assertEqual(data[50:51], hx("01"))
     self.assertEqual(data[51:52], hx("01"))
     self.assertEqual(data[52:72], hx("01000208") + hs("goldibex") + hx("0200") + hx("03") + hs("ned") + hx("0100"))
-
